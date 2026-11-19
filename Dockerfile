@@ -14,6 +14,7 @@
 # its native addon for linux; the runtime stage below is slim.
 FROM node:24 AS build
 WORKDIR /app
+RUN npm install -g @anthropic-ai/claude-code
 
 # Manifests first so `npm ci` is cached independently of source edits. Every workspace manifest is
 # needed — npm resolves the whole workspace graph before it installs anything.
