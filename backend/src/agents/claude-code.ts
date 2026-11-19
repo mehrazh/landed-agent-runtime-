@@ -63,22 +63,21 @@ export function mcpConfigPath(): string {
   return p;
 }
 
-// Env for the spawned run: drop ANTHROPIC_API_KEY (else it overrides OAuth and bills per-token) and
-// make sure ~/.local/bin (where `claude` lives) is on PATH under launchd's minimal environment.
+
+// Environment for Claude Code using Anthropic API billing.
+// Preserve ANTHROPIC_API_KEY for pay-as-you-go authentication.
 export function claudeEnv(): NodeJS.ProcessEnv {
   const env = { ...process.env };
-  delete env.ANTHROPIC_API_KEY;
-  env.PATH = `${env.HOME}/.local/bin:${env.PATH ?? ""}`;
+  env.PATH = `${env.HOME || "/home/node"}/.local/bin:${env.PATH ?? ""}`;
   return env;
 }
 
-// The model every full agent run is pinned to. Passing no --model silently inherits whatever the
-// installed CLI defaults to — which is how July's runs came out on Opus 4.8 and August's on Opus 5,
-// roughly doubling per-job cost with no change on our side. Pin it so the model is a decision we
-// make; CLAUDE_MODEL overrides it, so trialling a cheaper model on a job type is a config change
-// rather than a deploy.
-export const DEFAULT_CLAUDE_MODEL = "claude-opus-5";
-export const claudeModel = (): string => process.env.CLAUDE_MODEL || DEFAULT_CLAUDE_MODEL;
+// Default model for native agent execution.
+// Can be overridden using the CLAUDE_MODEL environment variable.
+export const DEFAULT_CLAUDE_MODEL = "sonnet";
+
+export const claudeModel = (): string =>
+  process.env.CLAUDE_MODEL || DEFAULT_CLAUDE_MODEL;
 
 // Flags shared by the FULL agent runs (drain runner + the general "do anything" chat): the jobhunt
 // MCP server, no interactive permission prompts, and write access to the whole asset folder.
